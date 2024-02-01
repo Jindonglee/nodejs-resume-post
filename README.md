@@ -1,4 +1,5 @@
 erd 주소 =  https://www.erdcloud.com/d/L6dnXXyFe74sYug84
+
 api 명세서 = https://occipital-shad-472.notion.site/7f566a207767400ba994506e60a16940?v=f4e37468b16d413caaf078794bcfc82c
 
 1. **암호화 방식**
