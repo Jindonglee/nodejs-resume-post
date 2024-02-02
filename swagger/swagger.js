@@ -118,7 +118,7 @@ module.exports = {
               },
             },
           },
-          401: {
+          400: {
             description: "존재하지 않는 이메일 이거나 비밀번호가 일치하지 않음",
             content: {
               "application/json": {
@@ -168,7 +168,7 @@ module.exports = {
               },
             },
           },
-          401: {
+          404: {
             description: "유저정보가 존재하지 않습니다.",
             content: {
               "application/json": {
@@ -244,13 +244,33 @@ module.exports = {
             description: "성공적으로 이력서 목록을 가져옴",
             content: {
               "application/json": {
-                schema: {
-                  $ref: "#/components/schemas/Resume",
+                example: {
+                  data: {
+                    resumeId: "43354d8f-19b4-4e1f-84d4-9420c4a2d22e",
+                    title: "제목이",
+                    content: "날 뽑지 말아주세요.",
+                    status: "APPLY",
+                    user: {
+                      name: "이진동2",
+                    },
+                    createdAt: "2024-02-01T07:36:23.554Z",
+                    updatedAt: "2024-02-01T14:12:24.599Z",
+                  },
                 },
               },
             },
           },
-          401: {
+          400: {
+            description: "이력서 Id는 필수값입니다.",
+            content: {
+              "application/json": {
+                example: {
+                  message: "이력서 Id는 필수값입니다.",
+                },
+              },
+            },
+          },
+          404: {
             description: "이력서 정보가 존재하지 않습니다.",
             content: {
               "application/json": {
@@ -290,20 +310,20 @@ module.exports = {
                 example: {
                   data: {
                     resumeId: "43354d8f-19b4-4e1f-84d4-9420c4a2d22e",
-                    title: "이 회사의 지원하는 3가지 이유",
-                    content: "...",
+                    title: "제목이",
+                    content: "날 뽑지 말아주세요.",
                     status: "APPLY",
-                    createdAt: "2022-01-01T12:34:56Z",
-                    updatedAt: "2022-01-02T12:34:56Z",
                     user: {
-                      name: "사용자 이름",
+                      name: "이진동2",
                     },
+                    createdAt: "2024-02-01T07:36:23.554Z",
+                    updatedAt: "2024-02-01T14:12:24.599Z",
                   },
                 },
               },
             },
           },
-          401: {
+          404: {
             description: "이력서를 찾을 수 없음",
             content: {
               "application/json": {

@@ -3,15 +3,29 @@ const { prisma } = require("../utils/prisma/index.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middlewares/auth.middleware.js");
+const joi = require("joi");
 
 const router = express.Router();
 
+const signUpInfo = joi.object({
+  name: joi.string().min(1).max(50).required(),
+  email: joi.string().email().required(),
+  password: joi.string().min(6).required(),
+  passwordConfirm: joi.string().min(6).required(),
+});
+
+const logInINfo = joi.object({
+  email: joi.string().min(1).max(50).required(),
+  password: joi.string().min(6).required(),
+});
+
 router.post("/sign-up", async (req, res, next) => {
   try {
-    const { name, email, password, passwordConfirm } = req.body;
+    const validation = await signUpInfo.validateAsync(req.body);
+    const { name, email, password, passwordConfirm } = validation;
 
-    if (password !== passwordConfirm || password < 6) {
-      return res.status(401).json({
+    if (password !== passwordConfirm) {
+      return res.status(400).json({
         message: "최소 6자 이상이며, 비밀번호 확인과 일치해야 합니다.",
       });
     }
@@ -51,7 +65,8 @@ router.post("/sign-up", async (req, res, next) => {
 // 로그인 라우터
 router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const validation = await logInINfo.validateAsync(req.body);
+    const { email, password } = validation;
 
     const user = await prisma.users.findFirst({ where: { email } });
 
@@ -109,7 +124,7 @@ router.get("/userInfo", authMiddleware, async (req, res, next) => {
     },
   });
   if (!user)
-    return res.status(401).json({ message: "유저정보가 존재하지 않습니다." });
+    return res.status(404).json({ message: "유저정보가 존재하지 않습니다." });
   return res.status(200).json({ data: user });
 });
 
