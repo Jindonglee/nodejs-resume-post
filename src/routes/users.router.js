@@ -95,7 +95,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.get("/user", authMiddleware, async (req, res, next) => {
+router.get("/userInfo", authMiddleware, async (req, res, next) => {
   const { userId } = req.locals.user;
 
   const user = await prisma.users.findFirst({

@@ -17,7 +17,7 @@ module.exports = {
   },
   servers: [
     {
-      url: "/api",
+      url: "http://localhost:3018/",
       description: "Local server",
     },
   ],
@@ -35,7 +35,7 @@ module.exports = {
     },
   ],
   paths: {
-    "/sign-up": {
+    "/users/sign-up": {
       post: {
         tags: ["사용자"],
         summary: "회원가입",
@@ -90,7 +90,7 @@ module.exports = {
         },
       },
     },
-    "/login": {
+    "/users/login": {
       post: {
         tags: ["사용자"],
         summary: "로그인",
@@ -140,7 +140,7 @@ module.exports = {
         },
       },
     },
-    "/user": {
+    "/users/userInfo": {
       get: {
         tags: ["사용자"],
         summary: "사용자 정보 조회",
@@ -181,7 +181,7 @@ module.exports = {
         },
       },
     },
-    "/posts": {
+    "/resumes/posts": {
       post: {
         tags: ["이력서 게시"],
         summary: "이력서 게시",
@@ -263,7 +263,7 @@ module.exports = {
         },
       },
     },
-    "/posts/{resumeId}": {
+    "/resumes/posts/{resumeId}": {
       get: {
         tags: ["이력서 게시"],
         summary: "이력서 상세 정보 조회",
