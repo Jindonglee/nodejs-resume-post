@@ -7,7 +7,6 @@ module.exports = async function (req, res, next) {
 
     if (!authorization) {
       const refreshToken = req.cookies.refreshToken;
-      console.log(refreshToken);
 
       if (!refreshToken) {
         throw new Error("Access Token 및 Refresh Token이 존재하지 않습니다.");

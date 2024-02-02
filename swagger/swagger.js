@@ -40,7 +40,7 @@ module.exports = {
         tags: ["사용자"],
         summary: "회원가입",
         description:
-          "이메일, 비밀번호, 비밀번호 확인, 이름을 데이터로 넘겨서 회원가입을 요청합니다.",
+          "이메일, 비밀번호, 비밀번호 확인, 이름을 데이터로 넘겨서 회원가입을 요청합니다. grade: 'admin'으로 요청하면 관리자 권한을 받을 수 있다.",
         requestBody: {
           description: "요청",
           content: {

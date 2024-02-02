@@ -11,6 +11,9 @@ const router = express.Router();
 const resumeForm = joi.object({
   title: joi.string().min(1).max(100).required(),
   content: joi.string(),
+  status: joi
+    .string()
+    .valid("APPLY", "DROP", "PASS", "INTERVIEW1", "INTERVIEW2", "FINAL_PASS"),
 });
 
 router.post("/posts", authMiddleware, async (req, res, next) => {
@@ -34,79 +37,107 @@ router.post("/posts", authMiddleware, async (req, res, next) => {
 });
 
 router.get("/posts", async (req, res, next) => {
-  let getUrl = req.url;
-  let queryData = url.parse(getUrl, true).query;
-  let orderValue = queryData.orderValue;
-  const orderKey = queryData.orderKey;
-  const orderByOptions = orderKey
-    ? [{ [orderKey]: orderValue.toLowerCase() }]
-    : undefined;
-  const resumeList = await prisma.resume.findMany({
-    select: {
-      resumeId: true,
-      title: true,
-      content: true,
-      status: true,
-      user: {
-        select: {
-          name: true,
+  try {
+    let getUrl = req.url;
+    let queryData = url.parse(getUrl, true).query;
+    let orderValue = queryData.orderValue;
+    const orderKey = queryData.orderKey;
+    const orderByOptions = orderKey
+      ? [{ [orderKey]: orderValue.toLowerCase() }]
+      : undefined;
+    const resumeList = await prisma.resume.findMany({
+      select: {
+        resumeId: true,
+        title: true,
+        content: true,
+        status: true,
+        user: {
+          select: {
+            name: true,
+          },
         },
+        createdAt: true,
+        updatedAt: true,
       },
-      createdAt: true,
-      updatedAt: true,
-    },
-    orderBy: orderByOptions,
-  });
-  return res.status(200).json({ data: resumeList });
+      orderBy: orderByOptions,
+    });
+    return res.status(200).json({ data: resumeList });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get("/posts/:resumeId", async (req, res, next) => {
-  const { resumeId } = req.params;
-  if (!resumeId) {
-    return res.status(400).json({ message: "이력서 Id는 필수값입니다." });
-  }
-  const resumeDetail = await prisma.resume.findFirst({
-    where: { resumeId: resumeId },
-    select: {
-      resumeId: true,
-      title: true,
-      content: true,
-      status: true,
-      user: {
-        select: {
-          name: true,
+  try {
+    const { resumeId } = req.params;
+    if (!resumeId) {
+      return res.status(400).json({ message: "이력서 Id는 필수값입니다." });
+    }
+    const resumeDetail = await prisma.resume.findFirst({
+      where: { resumeId: resumeId },
+      select: {
+        resumeId: true,
+        title: true,
+        content: true,
+        status: true,
+        user: {
+          select: {
+            name: true,
+          },
         },
+        createdAt: true,
+        updatedAt: true,
       },
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-  if (!resumeDetail)
-    return res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
-  return res.status(200).json({ data: resumeDetail });
+    });
+    if (!resumeDetail)
+      return res.status(404).json({ message: "이력서를 찾을 수 없습니다." });
+    return res.status(200).json({ data: resumeDetail });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.patch("/posts/:resumeId", authMiddleware, async (req, res) => {
-  if (!resumeId) {
-    return res.status(400).json({ message: "이력서 Id는 필수값입니다." });
-  }
-  const validation = await resumeForm.validateAsync(req.body);
-  const updatedData = validation;
-  const { resumeId } = req.params;
-  const { userId } = req.locals.user;
+router.patch("/posts/:resumeId", authMiddleware, async (req, res, next) => {
+  try {
+    const validation = await resumeForm.validateAsync(req.body);
+    const updatedData = validation;
+    const { resumeId } = req.params;
+    const { userId } = req.locals.user;
+    if (!resumeId) {
+      return res.status(400).json({ message: "이력서 Id는 필수값입니다." });
+    }
 
-  const updateResume = await prisma.resume.update({
-    data: {
-      ...updatedData,
-    },
-    where: {
-      resumeId: resumeId,
-      userId: userId,
-    },
-  });
-  if (!updateResume)
-    return res.status(404).json({ message: "이력서 조회에 실패하엿습니다." });
-  return res.status(201).json({ message: "이력서를 수정했습니다." });
+    const isGrade = await prisma.users.findFirst({
+      where: { userId: userId },
+      select: {
+        grade: true,
+      },
+    });
+
+    const resume = await prisma.resume.findFirst({
+      where: { resumeId: resumeId },
+    });
+
+    const updateResume = await prisma.resume.update({
+      data: {
+        ...updatedData,
+      },
+      where: {
+        resumeId: resumeId,
+      },
+    });
+
+    if (!updateResume)
+      return res.status(404).json({ message: "이력서 조회에 실패하엿습니다." });
+    if (isGrade.grade === "user" && resume.userId !== userId) {
+      return res
+        .status(401)
+        .json({ message: "이력서를 수정할 권한이 없습니다." });
+    }
+    return res.status(201).json({ message: "이력서를 수정했습니다." });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.delete("/posts/:resumeId", authMiddleware, async (req, res) => {

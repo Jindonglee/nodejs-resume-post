@@ -12,6 +12,7 @@ const signUpInfo = joi.object({
   email: joi.string().email().required(),
   password: joi.string().min(6).required(),
   passwordConfirm: joi.string().min(6).required(),
+  grade: joi.string().valid("user", "admin", null),
 });
 
 const logInINfo = joi.object({
@@ -22,7 +23,7 @@ const logInINfo = joi.object({
 router.post("/sign-up", async (req, res, next) => {
   try {
     const validation = await signUpInfo.validateAsync(req.body);
-    const { name, email, password, passwordConfirm } = validation;
+    const { name, email, password, passwordConfirm, grade } = validation;
 
     if (password !== passwordConfirm) {
       return res.status(400).json({
@@ -47,6 +48,7 @@ router.post("/sign-up", async (req, res, next) => {
         name,
         email,
         password: hashedPassword,
+        grade,
       },
       select: {
         userId: true,
@@ -68,7 +70,7 @@ router.post("/login", async (req, res, next) => {
     const validation = await logInINfo.validateAsync(req.body);
     const { email, password } = validation;
 
-    const user = await prisma.users.findFirst({ where: { email } });
+    const user = await prisma.users.findFirst({ where: { email: email } });
 
     if (!user)
       return res.status(401).json({ message: "존재하지 않는 이메일 입니다." });
@@ -77,7 +79,7 @@ router.post("/login", async (req, res, next) => {
 
     // 엑세스 토큰과 리프레시 토큰 발급
     const accessToken = jwt.sign(
-      { userId: user.Id },
+      { userId: user.userId },
       process.env.ACCESS_TOKEN_SECRET_KEY,
       {
         expiresIn: "12h",
@@ -111,21 +113,25 @@ router.post("/login", async (req, res, next) => {
 });
 
 router.get("/userInfo", authMiddleware, async (req, res, next) => {
-  const { userId } = req.locals.user;
+  try {
+    const { userId } = req.locals.user;
 
-  const user = await prisma.users.findFirst({
-    where: { userId: userId },
-    select: {
-      userId: true,
-      name: true,
-      email: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-  if (!user)
-    return res.status(404).json({ message: "유저정보가 존재하지 않습니다." });
-  return res.status(200).json({ data: user });
+    const user = await prisma.users.findFirst({
+      where: { userId: userId },
+      select: {
+        userId: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    if (!user)
+      return res.status(404).json({ message: "유저정보가 존재하지 않습니다." });
+    return res.status(200).json({ data: user });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
