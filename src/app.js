@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger/swagger.js");
 const cors = require("cors");
+const KakaoRouter = require("./routes/kakao.router.js");
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cors(corsOptions));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/users", UsersRouter);
 app.use("/resumes", PostsRouter);
+app.use("/kakao", KakaoRouter);
 app.use(errorHandlingMiddleware);
 app.listen(PORT, () => {
   console.log(PORT, "포트로 서버가 열렸어요!");
