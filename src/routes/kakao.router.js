@@ -73,10 +73,6 @@ router.get("/finish", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
   try {
     const { kakaoId, password } = req.body;
-    if (!password) {
-      return res.status(400).json({ message: "비밀번호를 입력해 주세요" });
-    }
-
     const user = await prisma.users.findFirst({
       where: { kakaoId: +kakaoId },
     });
