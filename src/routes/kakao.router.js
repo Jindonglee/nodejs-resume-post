@@ -72,29 +72,13 @@ router.get("/finish", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { kakaoId, password } = req.body;
+    const { kakaoId } = req.body;
     const user = await prisma.users.findFirst({
       where: { kakaoId: +kakaoId },
     });
 
     if (!user) {
       return res.status(401).json({ message: "존재하지 않는 사용자입니다." });
-    }
-
-    // 최초 로그인이면 비밀번호 설정
-    if (!user.password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      await prisma.users.update({
-        where: { userId: user.userId },
-        data: { password: hashedPassword },
-      });
-    } else {
-      if (!(await bcrypt.compare(password, user.password))) {
-        return res
-          .status(401)
-          .json({ message: "비밀번호가 일치하지 않습니다." });
-      }
     }
 
     // 엑세스 토큰과 리프레시 토큰 발급
